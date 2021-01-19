@@ -24,7 +24,7 @@ namespace DataExtractionTool
             SqlConnection sqlConnection = new SqlConnection();
 
             List<DataCategory> dataCategories = new List<DataCategory>();
-            List<OutputSetting> outputSettings = new List<OutputSetting>();
+            OutputSettings outputSettings = new OutputSettings();
             List<OutColumn> columns = new List<OutColumn>();
             string Inpfile = String.Concat(ProjectFolder, "/input.xlsx");
             string inptColum = "InputValue";
@@ -96,7 +96,7 @@ namespace DataExtractionTool
         }
 
         //**************All logic regarding the settings will happen here*********************
-        public static void ExecuteSQL(SqlConnection conn, List<DataCategory> dataCategories, List<OutputSetting> outputSettings, List<OutColumn> columns, string tmpTableName, string inptColum,string OutputType)
+        public static void ExecuteSQL(SqlConnection conn, List<DataCategory> dataCategories, OutputSettings outputSettings, List<OutColumn> columns, string tmpTableName, string inptColum)
         {
 
             string SQL = "SELECT ";
@@ -199,7 +199,7 @@ namespace DataExtractionTool
 
 
 
-        public static void GetInputSettings(List<DataCategory> dataCategories, List<OutputSetting> outputSettings, List<OutColumn> columns,Excel.Workbook wb,string InptSheetName)
+        public static void GetInputSettings(List<DataCategory> dataCategories, OutputSettings outputSettings, List<OutColumn> columns,Excel.Workbook wb,string InptSheetName)
         {
             
 
@@ -212,6 +212,7 @@ namespace DataExtractionTool
 
 
             string col1;
+            string col2;
 
             while ((string)(sheet.Cells[i, 1] as Excel.Range).Value != "EndOfInput")
             {
@@ -249,26 +250,32 @@ namespace DataExtractionTool
 
                     if (currInpCat == "Output Settings")
                     {
-                        OutputSetting outS = new OutputSetting();
-                        outS.Setting = (string)(sheet.Cells[i, 1] as Excel.Range).Value;
-
-                        if (col1 == "From" || col1 == "To")
+                
+                        string val = (string)(sheet.Cells[i, 1] as Excel.Range).Value;
+                        switch (col1)
                         {
-                            DateTime x;
-                            x = (DateTime)(sheet.Cells[i, 2] as Excel.Range).Value;
-                            x = x.AddDays(1); //on data read of datetime it subtracts one day we add it back
-                            outS.Value = x.ToString("yyyy-MM-dd");
-                        }
-                        else
-                        {
-                            outS.Value = (string)(sheet.Cells[i, 2] as Excel.Range).Value;
-                        }
-                        outputSettings.Add(outS);
+                            case "Output Type":
+                                outputSettings.OutputType = val;
+                                break;
+                            case "Aggregation level":
+                                outputSettings.AggregationLevel = val;
+                                break;
+                            case "From":
+                                outputSettings.From = Convert.ToDateTime(val);
+                                break;
+                            case "To":
+                                outputSettings.To = Convert.ToDateTime(val);
+                                break;
+                                
 
+                        }
 
 
                     }
-                    if (currInpCat == "Columns")
+
+
+                        //}
+                        if (currInpCat == "Columns")
                     {
                         OutColumn o = new OutColumn();
                         o.SelColumn = (string)(sheet.Cells[i, 1] as Excel.Range).Value;
@@ -312,10 +319,12 @@ namespace DataExtractionTool
         public string SrcTable { get; set; }
         public string Short { get; set; }
     }
-    public class OutputSetting
+    public class OutputSettings
     {
-        public string Setting { get; set; }
-        public string Value { get; set; }
+        public string OutputType { get; set; }
+        public string AggregationLevel { get; set; }
+        public DateTime From { get; set; }
+        public DateTime To { get; set; }
 
     }
     public class OutColumn
