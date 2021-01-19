@@ -1,0 +1,8 @@
+C:\Users\m87316\source\repos\DataExtractionTool\DataExtractionTool\bin\Release\DataExtractionTool.exe.config
+C:\Users\m87316\source\repos\DataExtractionTool\DataExtractionTool\bin\Release\DataExtractionTool.exe
+C:\Users\m87316\source\repos\DataExtractionTool\DataExtractionTool\bin\Release\DataExtractionTool.pdb
+C:\Users\m87316\source\repos\DataExtractionTool\DataExtractionTool\obj\Release\DataExtractionTool.csprojAssemblyReference.cache
+C:\Users\m87316\source\repos\DataExtractionTool\DataExtractionTool\obj\Release\DataExtractionTool.csproj.ResolveComReference.cache
+C:\Users\m87316\source\repos\DataExtractionTool\DataExtractionTool\obj\Release\DataExtractionTool.csproj.CoreCompileInputs.cache
+C:\Users\m87316\source\repos\DataExtractionTool\DataExtractionTool\obj\Release\DataExtractionTool.exe
+C:\Users\m87316\source\repos\DataExtractionTool\DataExtractionTool\obj\Release\DataExtractionTool.pdb
