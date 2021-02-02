@@ -31,7 +31,7 @@ namespace DataExtractionTool
             string tmpTableName = "#DataExtractTool";
 
             Excel.Application xl = new Excel.Application();
-            sw.Start();
+            sw.Start();                                                                                                                                                                                                  
             var LastRecord = sw.Elapsed;
 
             try
@@ -45,16 +45,20 @@ namespace DataExtractionTool
 
                 Excel.Workbook wb = xl.Workbooks.Open(Inpfile);
                 GetInputSettings(dataCategories,outputSettings,columns, wb, "Inputs");
+
+                //Change input column to fit input method
+                inptColum = outputSettings.InptMethod;
+
                 LastRecord = PrintTime(sw,LastRecord);
                 //*****CreateSqlConnection
-                sqlConnection = CreateConnection("PSRVWDB1663\\PSQLPBI0002",dataCategories[1].SrcDB);
+                sqlConnection = CreateConnection("PSRVWDB1663\\PSQLPBI0002","master");
                 LastRecord = PrintTime(sw, LastRecord);
                 ReadInputDataSendToSQLServer(wb,"InputData", sqlConnection, tmpTableName, inptColum, 5000);
                 LastRecord = PrintTime(sw, LastRecord);
                 //**Interpret and apply OutputSettings
 
                 //******execute SQL Query --All SQL logic is contained in below function
-                ExecuteSQL(sqlConnection, dataCategories, outputSettings, columns,tmpTableName,inptColum);
+                ExecuteSQL(sqlConnection, dataCategories, outputSettings, columns,tmpTableName,inptColum,ProjectFolder);
                 LastRecord = PrintTime(sw, LastRecord);
 
 
@@ -96,29 +100,114 @@ namespace DataExtractionTool
         }
 
         //**************All logic regarding the settings will happen here*********************
-        public static void ExecuteSQL(SqlConnection conn, List<DataCategory> dataCategories, OutputSettings outputSettings, List<OutColumn> columns, string tmpTableName, string inptColum)
+        public static void ExecuteSQL(SqlConnection conn, List<DataCategory> dataCategories, OutputSettings outputSettings, List<OutColumn> columns, string tmpTableName, string inptColum, string ProjectFolder)
         {
+
 
             string SQL = "SELECT ";
             int cnt = 1;
+            int LatestSyncKey = 0;
+
+
+            SqlCommand cmd1 = new SqlCommand("SELECT MAX(Calendar_Key) Calendar_Key FROM netdw_Shared.dbo.Bridge_KVHX", conn);
+            using (IDataReader reader = cmd1.ExecuteReader())
+            {
+                while (reader.Read()) 
+                {
+                    LatestSyncKey = Convert.ToInt32(reader["Calendar_Key"].ToString());
+                }
+            }
+
+
+
+            //Reading columns
             foreach (OutColumn c in columns)
             {
                 if (c.Use)
                 {
-                    if (cnt == 1)
-                    {
-                        SQL = SQL + c.Short + "." + c.SelColumn;
+                    if(outputSettings.OutputType == "Current")
+                    {    
+                        
+                        if (cnt == 1)
+                        {
+                            SQL = SQL + c.Short + "." + c.SelColumn;
+                        }
+                        else
+                        {
+                            SQL = SQL + Environment.NewLine + "," + c.Short + "." + c.SelColumn;
+                        }
                     }
-                    else
-                    {
-                        SQL = SQL + Environment.NewLine + "," + c.Short + "." + c.SelColumn;
-                    }
+
 
                 }
                 cnt += 1;
             }
+            //Creating joins
+            SQL = SQL + Environment.NewLine + "FROM ";
+            cnt = 1;
+            foreach (DataCategory dc in dataCategories)
+            {
+                if (dc.Use)
+                {
+
+                    if (cnt==1)
+                    {
+                        SQL = SQL + dc.SrcDB + "." + dc.SrcSchema + "." + dc.SrcTable + " " + dc.Short;
+                    }
+                    else
+                    {
+                        SQL = SQL + Environment.NewLine + " INNER JOIN " + dc.SrcDB + "." + dc.SrcSchema + "." + dc.SrcTable + " " + dc.Short + " ON " + dc.Short + "." + dc.JoinKey + " = " + dc.JoinShort + "." + dc.JoinKey;
+                    }
+                }
+                cnt += 1;
+            }
+
+            if(outputSettings.OutputType == "Current")
+            {
+                SQL = SQL + Environment.NewLine + "WHERE FI.Calendar_Key = " + LatestSyncKey;
+            }
+
+            SqlCommand cmd = new SqlCommand(SQL, conn);
+
+
+ 
+
 
             Console.WriteLine(SQL);
+
+            cmd.CommandTimeout = 999999;
+            
+            
+            StreamWriter writer = new StreamWriter(ProjectFolder + "/output.csv");
+            string Delimiter = ";";
+
+            using(IDataReader reader = cmd.ExecuteReader())
+            {
+                for (int columnCounter = 0; columnCounter < reader.FieldCount; columnCounter++)
+                {
+                    if(columnCounter > 0)
+                    {
+                        writer.Write(Delimiter);
+                    }
+                    writer.Write(reader.GetName(columnCounter));
+                    
+                }
+                writer.WriteLine(string.Empty);
+
+                while (reader.Read())
+                {
+                    for (int columnCounter = 0; columnCounter < reader.FieldCount; columnCounter++)
+                    {
+                        if (columnCounter > 0)
+                        {
+                            writer.Write(Delimiter);
+                        }
+                        writer.Write(reader.GetValue(columnCounter).ToString());
+                    }
+                    writer.WriteLine(string.Empty);
+                }
+
+            }
 
             //SqlCommand cmd = new SqlCommand("SELECT COUNT(0) cnt FROM " + tmpTableName,conn);
             //using (SqlDataReader reader = cmd.ExecuteReader())
@@ -158,7 +247,7 @@ namespace DataExtractionTool
 
 
             DataTable tbl = new DataTable();
-            tbl.Columns.Add("InputValue");
+            tbl.Columns.Add(inptColum);
             double i = 2;
             while ((string)(ws.Cells[i, 1] as Excel.Range).Value!=null )
             {
@@ -204,6 +293,7 @@ namespace DataExtractionTool
             
 
             int i = 1;
+            int currInpCatInt = 1;
             string currInpCat = null;
             
             Excel.Worksheet sheet = wb.Worksheets[InptSheetName];
@@ -212,7 +302,6 @@ namespace DataExtractionTool
 
 
             string col1;
-            string col2;
 
             while ((string)(sheet.Cells[i, 1] as Excel.Range).Value != "EndOfInput")
             {
@@ -222,14 +311,21 @@ namespace DataExtractionTool
                 if (col1 == "Data Category")
                 {
                     currInpCat = "Data Category";
+                    currInpCatInt = 1;
                 }
                 else if (col1 == "Output Settings")
                 {
                     currInpCat = "Output Settings";
+                    currInpCatInt = 1;
                 }
                 else if (col1 == "Columns")
                 {
                     currInpCat = "Columns";
+                    currInpCatInt = 1;
+                }
+                else if(col1 == null || col1 =="")
+                {
+                    currInpCat = null;
                 }
 
                 if (col1 != currInpCat && col1 != null)
@@ -241,9 +337,23 @@ namespace DataExtractionTool
                         dc.Category = (string)(sheet.Cells[i, 1] as Excel.Range).Value;
                         dc.Use = (bool)(sheet.Cells[i, 2] as Excel.Range).Value;
                         dc.SrcDB = (string)(sheet.Cells[i, 3] as Excel.Range).Value;
-                        dc.SrcSchema = (string)(sheet.Cells[i, 41] as Excel.Range).Value;
+                        dc.SrcSchema = (string)(sheet.Cells[i, 4] as Excel.Range).Value;
                         dc.SrcTable = (string)(sheet.Cells[i, 5] as Excel.Range).Value;
                         dc.Short = (string)(sheet.Cells[i, 6] as Excel.Range).Value;
+                        
+                        if(currInpCatInt==1)
+                        {
+                            dc.JoinTable = "";
+                            dc.JoinKey = "";
+                            dc.Short = "";
+                        }
+                        else
+                        {
+                            dc.JoinTable = (string)(sheet.Cells[i, 7] as Excel.Range).Value;
+                            dc.JoinKey = (string)(sheet.Cells[i, 8] as Excel.Range).Value;
+                            dc.JoinShort = (string)(sheet.Cells[i, 9] as Excel.Range).Value;
+
+                        }
 
                         dataCategories.Add(dc);
                     }
@@ -251,37 +361,36 @@ namespace DataExtractionTool
                     if (currInpCat == "Output Settings")
                     {
                 
-                        string val = (string)(sheet.Cells[i, 1] as Excel.Range).Value;
+                        
                         switch (col1)
                         {
                             case "Output Type":
-                                outputSettings.OutputType = val;
+                                outputSettings.OutputType = (string)(sheet.Cells[i, 2] as Excel.Range).Value; ;
                                 break;
                             case "Aggregation level":
-                                outputSettings.AggregationLevel = val;
+                                outputSettings.AggregationLevel = (string)(sheet.Cells[i, 2] as Excel.Range).Value; ;
                                 break;
                             case "From":
-                                outputSettings.From = Convert.ToDateTime(val);
+                                outputSettings.From = (DateTime)(sheet.Cells[i, 2] as Excel.Range).Value;
                                 break;
                             case "To":
-                                outputSettings.To = Convert.ToDateTime(val);
+                                outputSettings.To = (DateTime)(sheet.Cells[i, 2] as Excel.Range).Value; ;
                                 break;
-                                
-
+                            case "Input Method":
+                                outputSettings.InptMethod = (string)(sheet.Cells[i, 2] as Excel.Range).Value;
+                                break;
                         }
-
-
                     }
 
-
                         //}
-                        if (currInpCat == "Columns")
+                    if (currInpCat == "Columns")
                     {
                         OutColumn o = new OutColumn();
                         o.SelColumn = (string)(sheet.Cells[i, 1] as Excel.Range).Value;
                         o.Use = (bool)(sheet.Cells[i, 2] as Excel.Range).Value;
                         o.DataCategory = (string)(sheet.Cells[i, 3] as Excel.Range).Value;
                         o.Short = (string)(sheet.Cells[i, 4] as Excel.Range).Value;
+           
 
                         columns.Add(o);
                     }
@@ -290,7 +399,7 @@ namespace DataExtractionTool
 
 
 
-
+                currInpCatInt += 1;
                 i += 1;
             }
 
@@ -310,6 +419,7 @@ namespace DataExtractionTool
         }
     }
 
+
     public class DataCategory
     {
         public string Category { get; set; }
@@ -318,6 +428,9 @@ namespace DataExtractionTool
         public string SrcSchema { get; set; }
         public string SrcTable { get; set; }
         public string Short { get; set; }
+        public string JoinTable { get; set; }
+        public string JoinKey { get; set; }
+        public string JoinShort { get; set; }
     }
     public class OutputSettings
     {
@@ -325,6 +438,7 @@ namespace DataExtractionTool
         public string AggregationLevel { get; set; }
         public DateTime From { get; set; }
         public DateTime To { get; set; }
+        public string InptMethod { get; set; }
 
     }
     public class OutColumn

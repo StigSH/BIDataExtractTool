@@ -1,0 +1,20 @@
+-----------Exception Details on  25-01-2021 12:16:40-----------------
+-------------------------------------------------------------------------------------
+
+
+
+Log Written Date: 25-01-2021 12:16:40
+
+Error Line No : 0
+
+Error Location : 
+
+Error Message: The given ColumnName 'TDC_KVHX' does not match up with any column in data source.
+
+Exception Type: System.InvalidOperationException
+
+
+--------------------------------*End*------------------------------------------
+
+
+

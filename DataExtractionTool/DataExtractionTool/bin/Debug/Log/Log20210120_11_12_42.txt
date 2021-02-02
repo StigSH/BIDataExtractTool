@@ -1,0 +1,20 @@
+-----------Exception Details on  20-01-2021 11:12:42-----------------
+-------------------------------------------------------------------------------------
+
+
+
+Log Written Date: 20-01-2021 11:12:42
+
+Error Line No : 0
+
+Error Location : 
+
+Error Message: Cannot convert type 'string' to 'bool'
+
+Exception Type: Microsoft.CSharp.RuntimeBinder.RuntimeBinderException
+
+
+--------------------------------*End*------------------------------------------
+
+
+

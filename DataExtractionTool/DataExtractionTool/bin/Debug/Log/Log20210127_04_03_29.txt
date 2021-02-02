@@ -1,0 +1,20 @@
+-----------Exception Details on  27-01-2021 16:03:29-----------------
+-------------------------------------------------------------------------------------
+
+
+
+Log Written Date: 27-01-2021 16:03:29
+
+Error Line No : 0
+
+Error Location : 
+
+Error Message: Invalid object name 'netdw_Shared.dataview.Bridge_KVHX'.
+
+Exception Type: System.Data.SqlClient.SqlException
+
+
+--------------------------------*End*------------------------------------------
+
+
+

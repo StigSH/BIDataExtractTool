@@ -6,3 +6,11 @@ C:\Users\m87316\source\repos\DataExtractionTool\DataExtractionTool\bin\Debug\Dat
 C:\Users\m87316\source\repos\DataExtractionTool\DataExtractionTool\bin\Debug\DataExtractionTool.pdb
 C:\Users\m87316\source\repos\DataExtractionTool\DataExtractionTool\obj\Debug\DataExtractionTool.exe
 C:\Users\m87316\source\repos\DataExtractionTool\DataExtractionTool\obj\Debug\DataExtractionTool.pdb
+C:\Users\m87316\Documents\GitHub\BIDataExtractTool\DataExtractionTool\DataExtractionTool\bin\Debug\DataExtractionTool.exe.config
+C:\Users\m87316\Documents\GitHub\BIDataExtractTool\DataExtractionTool\DataExtractionTool\bin\Debug\DataExtractionTool.exe
+C:\Users\m87316\Documents\GitHub\BIDataExtractTool\DataExtractionTool\DataExtractionTool\bin\Debug\DataExtractionTool.pdb
+C:\Users\m87316\Documents\GitHub\BIDataExtractTool\DataExtractionTool\DataExtractionTool\obj\Debug\DataExtractionTool.csprojAssemblyReference.cache
+C:\Users\m87316\Documents\GitHub\BIDataExtractTool\DataExtractionTool\DataExtractionTool\obj\Debug\DataExtractionTool.csproj.ResolveComReference.cache
+C:\Users\m87316\Documents\GitHub\BIDataExtractTool\DataExtractionTool\DataExtractionTool\obj\Debug\DataExtractionTool.csproj.CoreCompileInputs.cache
+C:\Users\m87316\Documents\GitHub\BIDataExtractTool\DataExtractionTool\DataExtractionTool\obj\Debug\DataExtractionTool.exe
+C:\Users\m87316\Documents\GitHub\BIDataExtractTool\DataExtractionTool\DataExtractionTool\obj\Debug\DataExtractionTool.pdb

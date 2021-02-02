@@ -1,0 +1,21 @@
+-----------Exception Details on  20-01-2021 12:03:13-----------------
+-------------------------------------------------------------------------------------
+
+
+
+Log Written Date: 20-01-2021 12:03:13
+
+Error Line No : 0
+
+Error Location : 
+
+Error Message: Cannot open database "NETDW_CostumerVolumes" requested by the login. The login failed.
+Login failed for user 'ACCDOM01\M87316'.
+
+Exception Type: System.Data.SqlClient.SqlException
+
+
+--------------------------------*End*------------------------------------------
+
+
+

@@ -1,0 +1,20 @@
+-----------Exception Details on  27-01-2021 15:59:03-----------------
+-------------------------------------------------------------------------------------
+
+
+
+Log Written Date: 27-01-2021 15:59:03
+
+Error Line No : 117
+
+Error Location : C:\Users\m87316\Documents\GitHub\BIDataExtractTool\DataExtractionTool\DataExtractionTool\Program.cs
+
+Error Message: Specified cast is not valid.
+
+Exception Type: System.InvalidCastException
+
+
+--------------------------------*End*------------------------------------------
+
+
+
