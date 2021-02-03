@@ -1,16 +1,15 @@
------------Exception Details on  20-01-2021 12:03:13-----------------
+-----------Exception Details on  03-02-2021 12:41:37-----------------
 -------------------------------------------------------------------------------------
 
 
 
-Log Written Date: 20-01-2021 12:03:13
+Log Written Date: 03-02-2021 12:41:37
 
 Error Line No : 0
 
 Error Location : 
 
-Error Message: Cannot open database "NETDW_CostumerVolumes" requested by the login. The login failed.
-Login failed for user 'ACCDOM01\M87316'.
+Error Message: Invalid object name 'NETDW_CostumerVolumes.Dataview.Fact_CustomerVolumes'.
 
 Exception Type: System.Data.SqlClient.SqlException
 

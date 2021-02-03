@@ -1,15 +1,15 @@
------------Exception Details on  1/15/2021 1:42:09 PM-----------------
+-----------Exception Details on  03-02-2021 12:42:06-----------------
 -------------------------------------------------------------------------------------
 
 
 
-Log Written Date: 1/15/2021 1:42:09 PM
+Log Written Date: 03-02-2021 12:42:06
 
 Error Line No : 0
 
 Error Location : 
 
-Error Message: Incorrect syntax near ')'.
+Error Message: Invalid object name 'NETDW_CostumerVolumes.Dataview.Fact_CustomerVolumes_Stock'.
 
 Exception Type: System.Data.SqlClient.SqlException
 
