@@ -1,0 +1,20 @@
+-----------Exception Details on  02-02-2021 15:27:37-----------------
+-------------------------------------------------------------------------------------
+
+
+
+Log Written Date: 02-02-2021 15:27:37
+
+Error Line No : 0
+
+Error Location : 
+
+Error Message: The process cannot access the file 'C:\Users\m87316\Documents\GitHub\BIDataExtractTool\DataExtractionTool\DataExtractionTool\bin\Debug\output.csv' because it is being used by another process.
+
+Exception Type: System.IO.IOException
+
+
+--------------------------------*End*------------------------------------------
+
+
+

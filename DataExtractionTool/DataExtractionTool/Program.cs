@@ -105,9 +105,13 @@ namespace DataExtractionTool
 
 
             string SQL = "SELECT ";
+            string delimiter = ";";
+
             int cnt = 1;
             int LatestSyncKey = 0;
-
+            
+            StreamWriter writer = new StreamWriter(ProjectFolder + "/output.csv");
+           
 
             SqlCommand cmd1 = new SqlCommand("SELECT MAX(Calendar_Key) Calendar_Key FROM netdw_Shared.dbo.Bridge_KVHX", conn);
             using (IDataReader reader = cmd1.ExecuteReader())
@@ -142,6 +146,7 @@ namespace DataExtractionTool
                 }
                 cnt += 1;
             }
+
             //Creating joins
             SQL = SQL + Environment.NewLine + "FROM ";
             cnt = 1;
@@ -156,7 +161,7 @@ namespace DataExtractionTool
                     }
                     else
                     {
-                        SQL = SQL + Environment.NewLine + " INNER JOIN " + dc.SrcDB + "." + dc.SrcSchema + "." + dc.SrcTable + " " + dc.Short + " ON " + dc.Short + "." + dc.JoinKey + " = " + dc.JoinShort + "." + dc.JoinKey;
+                        SQL = SQL + Environment.NewLine + " LEFT JOIN " + dc.SrcDB + "." + dc.SrcSchema + "." + dc.SrcTable + " " + dc.Short + " ON " + dc.Short + "." + dc.JoinKey + " = " + dc.JoinShort + "." + dc.JoinKey;
                     }
                 }
                 cnt += 1;
@@ -169,45 +174,32 @@ namespace DataExtractionTool
 
             SqlCommand cmd = new SqlCommand(SQL, conn);
 
-
- 
-
-
             Console.WriteLine(SQL);
 
             cmd.CommandTimeout = 999999;
             
-            
-            StreamWriter writer = new StreamWriter(ProjectFolder + "/output.csv");
-            string Delimiter = ";";
-
-            using(IDataReader reader = cmd.ExecuteReader())
+            using ( SqlDataReader reader = cmd.ExecuteReader())
             {
-                for (int columnCounter = 0; columnCounter < reader.FieldCount; columnCounter++)
+                object[] output = new object[reader.FieldCount];
+                for (int i = 0; i < reader.FieldCount;i++)
                 {
-                    if(columnCounter > 0)
-                    {
-                        writer.Write(Delimiter);
-                    }
-                    writer.Write(reader.GetName(columnCounter));
-                    
+                    output[i] = reader.GetName(i);
                 }
-                writer.WriteLine(string.Empty);
+                writer.WriteLine(string.Join(delimiter, output));
 
-                while (reader.Read())
+                while(reader.Read())
                 {
-                    for (int columnCounter = 0; columnCounter < reader.FieldCount; columnCounter++)
-                    {
-                        if (columnCounter > 0)
-                        {
-                            writer.Write(Delimiter);
-                        }
-                        writer.Write(reader.GetValue(columnCounter).ToString());
-                    }
-                    writer.WriteLine(string.Empty);
+                    reader.GetValues(output);
+                    writer.WriteLine(string.Join(delimiter, output));
                 }
 
+                writer.Close();
+                conn.Close();
             }
+
+            
+
+
 
             //SqlCommand cmd = new SqlCommand("SELECT COUNT(0) cnt FROM " + tmpTableName,conn);
             //using (SqlDataReader reader = cmd.ExecuteReader())
@@ -244,7 +236,7 @@ namespace DataExtractionTool
             SqlBulkCopy bulkCpy = new SqlBulkCopy(conn);
             bulkCpy.DestinationTableName = tmpTableName;
             bulkCpy.ColumnMappings.Add(inptColum, inptColum);
-
+            bulkCpy.BulkCopyTimeout = 99999999;
 
             DataTable tbl = new DataTable();
             tbl.Columns.Add(inptColum);
