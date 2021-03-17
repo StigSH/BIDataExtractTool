@@ -1,0 +1,4 @@
+--------Reading input settings from : Inputs--------
+Time spent on last process : 00:00:18.3676035
+Time spent total : 00:00:18.3676439
+--------Creating connection to SQL Server--------

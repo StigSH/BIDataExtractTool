@@ -1,0 +1,25 @@
+--------Reading input settings from : Inputs--------
+Time spent on last process : 00:00:12.5836892
+Time spent total : 00:00:12.5837305
+--------Creating connection to SQL Server--------
+Time spent on last process : 00:00:01.5648159
+Time spent total : 00:00:14.1486161
+--------Inserting rows to temporary table on SQL Server--------
+Rows Inserted : 1000
+Time spent on last process : 00:00:10.2946415
+Time spent total : 00:00:24.4433213
+--------Executing SQL--------
+
+-------------------------
+SELECT KVHX.TDC_KVHX
+,FI.CanOrderFiber
+,FI.CanOrderCoax
+,CV.IsRgu
+FROM Master.dbo.#DataExtractTool src
+ LEFT JOIN NETDW_Shared.dataview.[Dim_KVHX] KVHX ON KVHX.TDC_KVHX = src.TDC_KVHX
+ LEFT JOIN NETDW_CustomerVolumes.dataview.Fact_CustomerVolumes_Stock CV ON CV.KVHX_Key = KVHX.KVHX_Key
+ LEFT JOIN NETDW_Infrastructure.dataview.Fact_Infrastructure_stock FI ON FI.KVHX_Key = KVHX.KVHX_Key
+WHERE FI.Calendar_Key = 20210211
+-------------------------
+Time spent on last process : 00:00:03.1737112
+Time spent total : 00:00:27.6171668

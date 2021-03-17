@@ -20,7 +20,11 @@ namespace DataExtractionTool
         {
             Stopwatch sw = new Stopwatch();
             ProjectFolder = Directory.GetCurrentDirectory();
- 
+            DateTime now = DateTime.Now;
+            string nowStr = now.ToString("yyyyMMdd_hh_mm_ss");
+            string LogPath = ProjectFolder + "\\Log";
+            string LogFullFilePth = LogPath + "/Log_" + nowStr + ".txt";
+
             SqlConnection sqlConnection = new SqlConnection();
 
             List<DataCategory> dataCategories = new List<DataCategory>();
@@ -29,6 +33,9 @@ namespace DataExtractionTool
             string Inpfile = String.Concat(ProjectFolder, "/input.xlsx");
             string inptColum = "InputValue";
             string tmpTableName = "#DataExtractTool";
+
+            StreamWriter log = File.AppendText(LogFullFilePth);
+
 
             Excel.Application xl = new Excel.Application();
             sw.Start();                                                                                                                                                                                                  
@@ -44,24 +51,26 @@ namespace DataExtractionTool
 
 
                 Excel.Workbook wb = xl.Workbooks.Open(Inpfile);
-                GetInputSettings(dataCategories,outputSettings,columns, wb, "Inputs");
+                GetInputSettings(dataCategories, outputSettings, columns, wb, "Inputs", log);
 
                 //Change input column to fit input method
                 inptColum = outputSettings.InptMethod;
 
-                LastRecord = PrintTime(sw,LastRecord);
+                LastRecord = PrintTime(sw,LastRecord, log);
                 //*****CreateSqlConnection
-                sqlConnection = CreateConnection("PSRVWDB1663\\PSQLPBI0002","master");
-                LastRecord = PrintTime(sw, LastRecord);
-                ReadInputDataSendToSQLServer(wb,"InputData", sqlConnection, tmpTableName, inptColum, 5000);
-                LastRecord = PrintTime(sw, LastRecord);
+                sqlConnection = CreateConnection("PSRVWDB1663\\PSQLPBI0002","master", log);
+                
+
+                LastRecord = PrintTime(sw, LastRecord, log);
+                ReadInputDataSendToSQLServer(wb,"InputData", sqlConnection, tmpTableName, inptColum, log, 5000);
+                LastRecord = PrintTime(sw, LastRecord, log);
                 //**Interpret and apply OutputSettings
 
                 //******execute SQL Query --All SQL logic is contained in below function
-                ExecuteSQL(sqlConnection, dataCategories, outputSettings, columns,tmpTableName,inptColum,ProjectFolder);
-                LastRecord = PrintTime(sw, LastRecord);
+                ExecuteSQL(sqlConnection, dataCategories, outputSettings, columns,tmpTableName,inptColum,ProjectFolder,log);
+                LastRecord = PrintTime(sw, LastRecord, log);
 
-
+                log.Close();
 
                 wb.Close(true, null, null);
                 System.Runtime.InteropServices.Marshal.ReleaseComObject(wb);
@@ -100,9 +109,11 @@ namespace DataExtractionTool
         }
 
         //**************All logic regarding the settings will happen here*********************
-        public static void ExecuteSQL(SqlConnection conn, List<DataCategory> dataCategories, OutputSettings outputSettings, List<OutColumn> columns, string tmpTableName, string inptColum, string ProjectFolder)
+        public static void ExecuteSQL(SqlConnection conn, List<DataCategory> dataCategories, OutputSettings outputSettings, List<OutColumn> columns, string tmpTableName, string inptColum, string ProjectFolder, StreamWriter log)
         {
-
+            string addToLog = "--------Executing SQL--------";
+            Console.WriteLine(addToLog);
+            log.WriteLine(addToLog);
 
             string SQL = "SELECT ";
             string delimiter = ";";
@@ -169,12 +180,17 @@ namespace DataExtractionTool
 
             if(outputSettings.OutputType == "Current")
             {
-                SQL = SQL + Environment.NewLine + "WHERE FI.Calendar_Key = " + LatestSyncKey;
+                SQL = SQL + Environment.NewLine + "WHERE FI.Calendar_Key = 20201231 --Hard coded in program.cs under where clauses after joins "; //+ LatestSyncKey;
             }
 
             SqlCommand cmd = new SqlCommand(SQL, conn);
 
-            Console.WriteLine(SQL);
+            addToLog = Environment.NewLine + "-------------------------";
+            addToLog += Environment.NewLine + SQL;
+            addToLog += Environment.NewLine + "-------------------------";
+            Console.WriteLine(addToLog);
+            log.WriteLine(addToLog);
+            
 
             cmd.CommandTimeout = 999999;
             
@@ -211,18 +227,27 @@ namespace DataExtractionTool
             //}
         }
         
-        public static System.TimeSpan PrintTime(Stopwatch sw, System.TimeSpan LastRecord)
+        public static System.TimeSpan PrintTime(Stopwatch sw, System.TimeSpan LastRecord, StreamWriter log)
         {
-            Console.WriteLine("Time spent on last process : " + Convert.ToString(sw.Elapsed - LastRecord));
-            Console.WriteLine("Time spent total : " + sw.Elapsed);
+
+            string addToLog = "Time spent on last process : " + Convert.ToString(sw.Elapsed - LastRecord);
+            addToLog += Environment.NewLine;
+            addToLog += "Time spent total : " + sw.Elapsed;
+
+
+
+            Console.WriteLine(addToLog);
+            log.WriteLine(addToLog);
+            
             LastRecord = sw.Elapsed;
 
             return LastRecord;
         } 
-        public static void ReadInputDataSendToSQLServer(Excel.Workbook wb,string sheetStr, SqlConnection conn, string tmpTableName, string inptColum,int BulkSize = 10)
+        public static void ReadInputDataSendToSQLServer(Excel.Workbook wb,string sheetStr, SqlConnection conn, string tmpTableName, string inptColum, StreamWriter log, int BulkSize = 10)
         {
-
-            Console.WriteLine("--------Inserting rows to temporary table on SQL Server--------");
+            string addToLog = "--------Inserting rows to temporary table on SQL Server--------";
+            Console.WriteLine(addToLog);
+            log.WriteLine(addToLog);
 
             SqlCommand cmd = new SqlCommand();
 
@@ -258,7 +283,9 @@ namespace DataExtractionTool
             if (tbl.Rows.Count > 0)
             {
                 bulkCpy.WriteToServer(tbl);
-                Console.WriteLine("Rows Inserted : "+ tbl.Rows.Count.ToString());
+                addToLog = "Rows Inserted : " + tbl.Rows.Count.ToString();
+                Console.WriteLine(addToLog);
+                log.WriteLine(addToLog);
                 tbl.Rows.Clear();
             }
 
@@ -267,9 +294,13 @@ namespace DataExtractionTool
             System.Runtime.InteropServices.Marshal.FinalReleaseComObject(ws);
         }
 
-        public static SqlConnection CreateConnection(string Server,string InitialDatabase)
+        public static SqlConnection CreateConnection(string Server,string InitialDatabase,StreamWriter log)
         {
-            Console.WriteLine("--------Creating connection to SQL Server--------");
+
+            string addToLog = "--------Creating connection to SQL Server--------";
+            Console.WriteLine(addToLog);
+            log.WriteLine(addToLog);
+
             SqlConnection conn = new SqlConnection();
             string connString = "Data Source=PSRVWDB1663\\PSQLPBI0002;Initial Catalog="+ InitialDatabase +";Integrated Security=true;";
             conn.ConnectionString = connString;
@@ -280,17 +311,17 @@ namespace DataExtractionTool
 
 
 
-        public static void GetInputSettings(List<DataCategory> dataCategories, OutputSettings outputSettings, List<OutColumn> columns,Excel.Workbook wb,string InptSheetName)
+        public static void GetInputSettings(List<DataCategory> dataCategories, OutputSettings outputSettings, List<OutColumn> columns,Excel.Workbook wb,string InptSheetName,StreamWriter log)
         {
             
 
             int i = 1;
             int currInpCatInt = 1;
             string currInpCat = null;
-            
             Excel.Worksheet sheet = wb.Worksheets[InptSheetName];
-            Console.WriteLine("--------Reading input settings from : " + sheet.Name + "--------");
-
+            string addToLog = "--------Reading input settings from : " + sheet.Name + "--------";
+            Console.WriteLine(addToLog);
+            log.WriteLine(addToLog);
 
 
             string col1;

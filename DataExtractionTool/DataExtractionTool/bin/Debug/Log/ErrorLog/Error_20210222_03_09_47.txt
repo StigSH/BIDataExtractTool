@@ -1,0 +1,20 @@
+-----------Exception Details on  22-02-2021 15:09:47-----------------
+-------------------------------------------------------------------------------------
+
+
+
+Log Written Date: 22-02-2021 15:09:47
+
+Error Line No : 0
+
+Error Location : 
+
+Error Message: Cannot write to a closed TextWriter.
+
+Exception Type: System.ObjectDisposedException
+
+
+--------------------------------*End*------------------------------------------
+
+
+

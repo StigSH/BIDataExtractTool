@@ -10,14 +10,15 @@ namespace DataExtractionTool
 {
     public class Logging
     {
+
         public static void WriteErrorToFile(string RootPth, Exception e)
         {
             
 
             DateTime now = DateTime.Now;
             string nowStr = now.ToString("yyyyMMdd_hh_mm_ss");
-            string LogPath = RootPth + "\\Log";
-            string LogFullFilePth = LogPath + "/Log" + nowStr + ".txt";
+            string LogPath = RootPth + "\\Log\\ErrorLog";
+            string LogFullFilePth = LogPath + "/Error_" + nowStr + ".txt";
             string line = Environment.NewLine + Environment.NewLine;
 
             var st = new StackTrace(e, true);
